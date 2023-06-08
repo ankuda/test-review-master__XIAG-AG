@@ -9,3 +9,8 @@
     background: lightgrey;
     align-items: center;
 }
+
+.todoCheckbox {
+    margin-top: -8px; 
+    margin-left: 5px;
+}

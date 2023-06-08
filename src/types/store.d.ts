@@ -3,3 +3,7 @@ interface AppState {
     todos: any[];
   };
 }
+
+interface ListState {
+  todos: any[];
+}

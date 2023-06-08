@@ -1,90 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Form } from 'react-bootstrap';
-import { InputNewTodo } from '../InputNewTodo';
+
+import InputNewTodo from '../InputNewTodo';
 import UserSelect from '../UserSelect';
-import { connect } from 'react-redux';
+
+import { addTodo, changeTodos } from '../../store';
+
 import styles from './MainApp.module.css';
 
+const MainApp: React.FC = () => {
+    const dispatch = useDispatch();
+    const todos = useSelector((state: any) => state.list.todos);
 
-type Todo = {
-    title: string,
-    user?: number,
-    isDone: boolean,
-}
+    const [todoTitle, setTodoTitle] = useState('');
 
-type MainAppProps = {
-    todos: Todo[],
-    addTodo: (t: Todo) => void,
-    changeTodo: (todos: Todo[]) => void,
-}
-type MainAppState = {
-    todoTitle: string
-};
+    const handleTodoTitle = (title: string) => {
+        setTodoTitle(title);
+    };
 
-class Index extends React.Component<MainAppProps, MainAppState> {
-    constructor(props: MainAppProps) {
-        super(props);
-        this.state = { todoTitle: '' }
-    }
-    handleTodoTitle = (todoTitle: string) => {
-        this.setState({ todoTitle })
-    }
+    const handleSubmitTodo = (todo: any) => {
+        dispatch(addTodo(todo));
+    };
 
-    handleSubmitTodo = (todo: any) => {
-        this.props.addTodo(todo)
-    }
-
-    render() {
-        const { todoTitle } = this.state;
-        window.allTodosIsDone = true;
-
-        this.props.todos.map(t => {
-            if (!t.isDone) {
-                window.allTodosIsDone = false
-            } else {
-                window.allTodosIsDone = true
+    const onChange = (idx: number) => () => {
+        const changedTodos = todos.map((t: any, index: number) => {
+            if (index === idx) {
+                return { ...t, isDone: !t.isDone };
             }
+
+            return t;
         });
 
-        return (
-            <div>
-                <Form.Check type="checkbox" label="all todos is done!" checked={window.allTodosIsDone}/>
-                <hr/>
-                <InputNewTodo todoTitle={todoTitle} onChange={this.handleTodoTitle} onSubmit={this.handleSubmitTodo}/>
-                {this.props.todos.map((t, idx) => (
-                    <div className={styles.todo} >
-                        {t.title}
-                        <UserSelect user={t.user} idx={idx}/>
-                        <Form.Check
-                            style={{ marginTop: -8, marginLeft: 5 }}
-                            type="checkbox" checked={t.isDone} onChange={(e) => {
-                            const changedTodos = this.props.todos.map((t, index) => {
-                                const res = { ...t }
-                                if (index == idx) {
-                                    res.isDone = !t.isDone;
-                                }
-                                return res;
+        dispatch(changeTodos(changedTodos));
+    };
 
-                            })
-                            this.props.changeTodo(changedTodos)
+    const allTodosIsDone = todos?.every((t: any) => t.isDone);
 
-                        }}
-                        />
-                    </div>
-                ))}
-            </div>
-        );
-    }
-}
+    return (
+        <div>
+            <Form.Check 
+                label="all todos is done!" 
+                checked={allTodosIsDone} 
+            />
+            <hr />
+            <InputNewTodo 
+                todoTitle={todoTitle} 
+                onChange={handleTodoTitle} 
+                onSubmit={handleSubmitTodo} 
+            />
+            {todos?.map((t: any, idx: number) => (
+                <div key={`${t.title}_${idx}`} className={styles.todo}>
+                    {t.title}
+                    <UserSelect user={t.user} idx={idx} />
+                    <Form.Check
+                        className={styles.todoCheckbox}
+                        checked={t.isDone}
+                        onChange={onChange(idx)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+};
 
-export default connect(
-    (state) => ({}),
-    (dispatch) => ({
-        addTodo: (todo: any) => {
-            dispatch({type: 'ADD_TODO', payload: todo});
-        },
-        changeTodo: (todos: any) => dispatch({type: 'CHANGE_TODOS', payload: todos}),
-        removeTodo: (index: number) => dispatch({type: 'REMOVE_TODOS', payload: index}),
-    })
-
-)(Index);
+export default MainApp;

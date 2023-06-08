@@ -1,28 +1,31 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export default configureStore({
-    reducer: {
-        list: (state = {todos: []}, action) => {
-            switch (action.type) {
-                case 'ADD_TODO': {
-                    const newState = state;
-                    newState.todos.push(action.payload);
-                    return newState;
-                }
-                case 'REMOVE_TODO': {
-                    return {
-                        ...state,
-                        todos: state.todos.filter((t: any, index: number) => index !== action.payload),
-                    };
-                }
-                case 'CHANGE_TODOS': {
-                    return {
-                        todos: action.payload,
-                    };
-                }
-                default:
-                    return state;
-            }
-        }
-    }
-})
+const initialState: ListState = {
+  todos: [],
+};
+
+const listSlice = createSlice({
+  name: 'list',
+  initialState,
+  reducers: {
+    addTodo: (state, action: PayloadAction<any>) => {
+      state.todos.push(action.payload);
+    },
+    removeTodo: (state, action: PayloadAction<number>) => {
+      state.todos = state.todos.filter((_, index) => index !== action.payload);
+    },
+    changeTodos: (state, action: PayloadAction<any[]>) => {
+      state.todos = action.payload;
+    },
+  },
+});
+
+export const { addTodo, removeTodo, changeTodos } = listSlice.actions;
+
+const store = configureStore({
+  reducer: {
+    list: listSlice.reducer,
+  },
+});
+
+export default store;
