@@ -1,55 +1,44 @@
-import React from 'react';
-import styles from './InputNewTodo.module.css'
+import React, { useState } from 'react';
 
-type InputNewTodoProps = {
-    todoTitle: string,
-    onChange: (todoTitle: string) => void,
-    onSubmit: (todo: any) => void,
+import styles from './InputNewTodo.module.css';
 
-}
-type InputNewTodoState = {
-    value: string
-}
+const InputNewTodo: React.FC<InputNewTodoProps> = ({ todoTitle, onChange, onSubmit }) => {
+  const [value, setValue] = useState('');
 
-export class InputNewTodo extends React.Component<InputNewTodoProps, InputNewTodoState> {
-    componentDidUpdate(prevProps: Readonly<InputNewTodoProps>, prevState: Readonly<InputNewTodoState>, snapshot?: any) {
-        if (this.props.todoTitle !== prevProps.todoTitle) {
-            this.setState({value: this.props.todoTitle})
-        }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+    
+    setValue(value);
+    onChange(value);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key !== 'Enter') {
+      return;
     }
 
-    handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.onChange(e.target.value);
+    event.preventDefault();
+
+    if (value) {
+      onSubmit({
+        title: value,
+        isDone: false,
+      });
+      onChange('');
+      setValue('');
     }
+  };
 
-    handleKeyDown = (event: React.KeyboardEvent) => {
-        if (event.keyCode !== 13) {
-            return;
-        }
+  return (
+    <input
+      className={styles.newTodo}
+      type="text"
+      value={todoTitle}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      placeholder="What needs to be done?"
+    />
+  );
+};
 
-        event.preventDefault();
-
-        var val = this.state.value.trim();
-
-        if (val) {
-            this.props.onSubmit({
-                title: this.state.value,
-                isDone: false,
-            });
-            this.props.onChange('');
-        }
-    }
-
-    render() {
-        return (
-            <input
-                className={styles['new-todo']}
-                type="text"
-                value={this.props.todoTitle}
-                onChange={this.handleChange}
-                onKeyDown={this.handleKeyDown}
-                placeholder="What needs to be done?"
-            />
-        );
-    }
-}
+export default InputNewTodo;
